@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-// Import screens
+import 'controllers/theme_controller.dart';
 import 'screens/about_screen.dart';
 import 'screens/projects_screen.dart';
 import 'screens/contact_screen.dart';
 import 'screens/skils_screen.dart';
 
 void main() {
+  Get.put(ThemeController());
   runApp(const MyApp());
 }
 
@@ -18,271 +20,82 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    final themeController = Get.find<ThemeController>();
+
+    return GetMaterialApp(
       title: 'Muhammad Faraz - Flutter Developer',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primaryColor: const Color(0xFF0A0E27),
-        scaffoldBackgroundColor: const Color(0xFF0A0E27),
-        textTheme: GoogleFonts.interTextTheme(
-          const TextTheme(
-            displayLarge: TextStyle(
-              fontSize: 72,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-              letterSpacing: -2,
-            ),
-            displayMedium: TextStyle(
-              fontSize: 48,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-              letterSpacing: -1,
-            ),
-            headlineMedium: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-            bodyLarge: TextStyle(
-              fontSize: 18,
-              color: Color(0xFFB8B8D1),
-              height: 1.6,
-            ),
-            bodyMedium: TextStyle(
-              fontSize: 16,
-              color: Color(0xFFB8B8D1),
-              height: 1.5,
-            ),
-          ),
-        ),
-      ),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const MainScreen(),
-        '/about': (context) => const AboutScreen(),
-        '/skills': (context) => const SkillsScreen(),
-        '/projects': (context) => const ProjectsScreen(),
-        '/contact': (context) => const ContactScreen(),
-      },
+      theme: ThemeController.lightTheme,
+      darkTheme: ThemeController.darkTheme,
+
+      themeMode: ThemeMode.dark,
+      home: const HomeScreen(),
+      getPages: [
+        GetPage(name: '/', page: () => const HomeScreen()),
+        GetPage(name: '/about', page: () => const AboutScreen()),
+        GetPage(name: '/skills', page: () => const SkillsScreen()),
+        GetPage(name: '/projects', page: () => const ProjectsScreen()),
+        GetPage(name: '/contact', page: () => const ContactScreen()),
+      ],
     );
   }
 }
 
-// Main Screen with Bottom Navigation for Mobile
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
-
-  @override
-  State<MainScreen> createState() => _MainScreenState();
-}
-
-class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
-  final List<Widget> _screens = const [
-    HomeContent(),
-    AboutScreen(),
-    SkillsScreen(),
-    ProjectsScreen(),
-    ContactScreen(),
-  ];
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 800;
+    final themeController = Get.find<ThemeController>();
 
     return Scaffold(
-      key: _scaffoldKey,
-      drawer: isMobile ? _buildDrawer() : null,
-      body: Stack(
-        children: [
-          const AnimatedBackground(),
-          Column(
-            children: [
-              CustomAppBar(
-                scaffoldKey: _scaffoldKey,
-                onNavigate: (index) {
-                  if (isMobile) {
-                    setState(() => _selectedIndex = index);
-                  }
-                },
-              ),
-              Expanded(
-                child: isMobile
-                    ? _screens[_selectedIndex]
-                    : const HomeContent(),
-              ),
-            ],
+      body: Obx(
+        () => Container(
+          decoration: BoxDecoration(
+            gradient: themeController.backgroundGradient,
           ),
-        ],
-      ),
-      bottomNavigationBar: isMobile ? _buildBottomNav() : null,
-    );
-  }
-
-  Widget _buildBottomNav() {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F1229),
-        border: Border(
-          top: BorderSide(color: const Color(0xFF2A2E4E), width: 1),
-        ),
-      ),
-      child: BottomNavigationBar(
-        backgroundColor: Colors.transparent,
-        selectedItemColor: const Color(0xFF00F5FF),
-        unselectedItemColor: const Color(0xFF8A8AA8),
-        currentIndex: _selectedIndex,
-        type: BottomNavigationBarType.fixed,
-        elevation: 0,
-        selectedLabelStyle: GoogleFonts.inter(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
-        unselectedLabelStyle: GoogleFonts.inter(
-          fontSize: 12,
-          fontWeight: FontWeight.w400,
-        ),
-        onTap: (index) {
-          setState(() => _selectedIndex = index);
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.house, size: 20),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.user, size: 20),
-            label: 'About',
-          ),
-          BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.code, size: 20),
-            label: 'Skills',
-          ),
-          BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.briefcase, size: 20),
-            label: 'Projects',
-          ),
-          BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.envelope, size: 20),
-            label: 'Contact',
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDrawer() {
-    return Drawer(
-      backgroundColor: const Color(0xFF0F1229),
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          DrawerHeader(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF00F5FF), Color(0xFF7B61FF)],
-              ),
-            ),
+          child: SingleChildScrollView(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Text(
-                  'Muhammad Faraz',
-                  style: GoogleFonts.inter(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Flutter Developer',
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    color: Colors.black87,
-                  ),
-                ),
+                const CustomAppBar(),
+                const HeroSection(),
+                const SizedBox(height: 80),
+                const WhyChooseMeSection(),
+                const SizedBox(height: 80),
+                const FeaturedProjectsSection(),
+                const SizedBox(height: 80),
+                const Footer(),
               ],
             ),
           ),
-          _buildDrawerItem(FontAwesomeIcons.house, 'Home', 0),
-          _buildDrawerItem(FontAwesomeIcons.user, 'About', 1),
-          _buildDrawerItem(FontAwesomeIcons.code, 'Skills', 2),
-          _buildDrawerItem(FontAwesomeIcons.briefcase, 'Projects', 3),
-          _buildDrawerItem(FontAwesomeIcons.envelope, 'Contact', 4),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDrawerItem(IconData icon, String title, int index) {
-    final isSelected = _selectedIndex == index;
-    return ListTile(
-      leading: FaIcon(
-        icon,
-        color: isSelected ? const Color(0xFF00F5FF) : Colors.white,
-        size: 20,
-      ),
-      title: Text(
-        title,
-        style: GoogleFonts.inter(
-          color: isSelected ? const Color(0xFF00F5FF) : Colors.white,
-          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
         ),
       ),
-      selected: isSelected,
-      selectedTileColor: const Color(0xFF00F5FF).withOpacity(0.1),
-      onTap: () {
-        setState(() => _selectedIndex = index);
-        Navigator.pop(context);
-      },
     );
   }
 }
 
-// Custom App Bar
 class CustomAppBar extends StatelessWidget {
-  final GlobalKey<ScaffoldState> scaffoldKey;
-  final Function(int)? onNavigate;
-
-  const CustomAppBar({
-    super.key,
-    required this.scaffoldKey,
-    this.onNavigate,
-  });
+  const CustomAppBar({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final themeController = Get.find<ThemeController>();
     final isDesktop = MediaQuery.of(context).size.width > 800;
 
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: isDesktop ? 80 : 20,
-        vertical: 20,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0.0, end: 1.0),
-            duration: const Duration(milliseconds: 800),
-            builder: (context, value, child) {
-              return Opacity(
-                opacity: value,
-                child: Transform.translate(
-                  offset: Offset(0, 20 * (1 - value)),
-                  child: child,
-                ),
-              );
-            },
-            child: Row(
+    return Obx(
+      () => Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: isDesktop ? 80 : 24,
+          vertical: 24,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
               children: [
-                const FaIcon(
+                FaIcon(
                   FontAwesomeIcons.code,
-                  color: Color(0xFF00F5FF),
+                  color: themeController.accentColor,
                   size: 24,
                 ),
                 const SizedBox(width: 12),
@@ -291,47 +104,146 @@ class CustomAppBar extends StatelessWidget {
                   style: GoogleFonts.poppins(
                     fontSize: 28,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF00F5FF),
+                    color: themeController.accentColor,
                     letterSpacing: 2,
                   ),
                 ),
               ],
             ),
-          ),
-          if (isDesktop)
-            Row(
-              children: [
-                _NavItem(text: 'About', icon: FontAwesomeIcons.user),
-                const SizedBox(width: 32),
-                _NavItem(text: 'Skills', icon: FontAwesomeIcons.code),
-                const SizedBox(width: 32),
-                _NavItem(text: 'Projects', icon: FontAwesomeIcons.briefcase),
-                const SizedBox(width: 32),
-                _NavItem(text: 'Contact', icon: FontAwesomeIcons.envelope),
-              ],
-            )
-          else
-            IconButton(
-              icon: const FaIcon(
-                FontAwesomeIcons.bars,
-                color: Colors.white,
-                size: 20,
+            if (isDesktop)
+              Row(
+                children: [
+                  _NavItem(
+                    icon: FontAwesomeIcons.user,
+                    text: 'About',
+                    onTap: () => Get.toNamed('/about'),
+                  ),
+                  const SizedBox(width: 40),
+                  _NavItem(
+                    icon: FontAwesomeIcons.code,
+                    text: 'Skills',
+                    onTap: () => Get.toNamed('/skills'),
+                  ),
+                  const SizedBox(width: 40),
+                  _NavItem(
+                    icon: FontAwesomeIcons.briefcase,
+                    text: 'Projects',
+                    onTap: () => Get.toNamed('/projects'),
+                  ),
+                  const SizedBox(width: 40),
+                  _NavItem(
+                    icon: FontAwesomeIcons.envelope,
+                    text: 'Contact',
+                    onTap: () => Get.toNamed('/contact'),
+                  ),
+                  const SizedBox(width: 40),
+                  IconButton(
+                    icon: FaIcon(
+                      themeController.isDarkMode
+                          ? FontAwesomeIcons.sun
+                          : FontAwesomeIcons.moon,
+                      color: themeController.accentColor,
+                      size: 20,
+                    ),
+                    onPressed: () => themeController.toggleTheme(),
+                  ),
+                ],
+              )
+            else
+              Row(
+                children: [
+                  IconButton(
+                    icon: FaIcon(
+                      themeController.isDarkMode
+                          ? FontAwesomeIcons.sun
+                          : FontAwesomeIcons.moon,
+                      color: themeController.accentColor,
+                      size: 20,
+                    ),
+                    onPressed: () => themeController.toggleTheme(),
+                  ),
+                  IconButton(
+                    icon: FaIcon(
+                      FontAwesomeIcons.bars,
+                      color: themeController.textPrimary,
+                      size: 20,
+                    ),
+                    onPressed: () => _showMobileMenu(context),
+                  ),
+                ],
               ),
-              onPressed: () {
-                scaffoldKey.currentState?.openDrawer();
-              },
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showMobileMenu(BuildContext context) {
+    final themeController = Get.find<ThemeController>();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Obx(
+        () => Container(
+          decoration: BoxDecoration(
+            color: themeController.cardColor,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
             ),
-        ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 20),
+              _MobileMenuItem(
+                icon: FontAwesomeIcons.user,
+                text: 'About',
+                onTap: () {
+                  Navigator.pop(context);
+                  Get.toNamed('/about');
+                },
+              ),
+              _MobileMenuItem(
+                icon: FontAwesomeIcons.code,
+                text: 'Skills',
+                onTap: () {
+                  Navigator.pop(context);
+                  Get.toNamed('/skills');
+                },
+              ),
+              _MobileMenuItem(
+                icon: FontAwesomeIcons.briefcase,
+                text: 'Projects',
+                onTap: () {
+                  Navigator.pop(context);
+                  Get.toNamed('/projects');
+                },
+              ),
+              _MobileMenuItem(
+                icon: FontAwesomeIcons.envelope,
+                text: 'Contact',
+                onTap: () {
+                  Navigator.pop(context);
+                  Get.toNamed('/contact');
+                },
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
 
 class _NavItem extends StatefulWidget {
-  final String text;
   final IconData icon;
+  final String text;
+  final VoidCallback onTap;
 
-  const _NavItem({required this.text, required this.icon});
+  const _NavItem({required this.icon, required this.text, required this.onTap});
 
   @override
   State<_NavItem> createState() => _NavItemState();
@@ -342,109 +254,68 @@ class _NavItemState extends State<_NavItem> {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: () {
-          Navigator.pushNamed(context, '/${widget.text.toLowerCase()}');
-        },
-        child: Row(
-          children: [
-            FaIcon(
-              widget.icon,
-              size: 16,
-              color: _isHovered ? const Color(0xFF00F5FF) : Colors.white,
-            ),
-            const SizedBox(width: 8),
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 200),
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: _isHovered ? const Color(0xFF00F5FF) : Colors.white,
-                letterSpacing: 0.5,
+    final themeController = Get.find<ThemeController>();
+
+    return Obx(
+      () => MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: GestureDetector(
+          onTap: widget.onTap,
+          child: Row(
+            children: [
+              FaIcon(
+                widget.icon,
+                size: 16,
+                color: _isHovered
+                    ? themeController.accentColor
+                    : themeController.textPrimary,
               ),
-              child: Text(widget.text),
-            ),
-          ],
+              const SizedBox(width: 8),
+              Text(
+                widget.text,
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: _isHovered
+                      ? themeController.accentColor
+                      : themeController.textPrimary,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-// Animated Background
-class AnimatedBackground extends StatefulWidget {
-  const AnimatedBackground({super.key});
+class _MobileMenuItem extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  final VoidCallback onTap;
 
-  @override
-  State<AnimatedBackground> createState() => _AnimatedBackgroundState();
-}
-
-class _AnimatedBackgroundState extends State<AnimatedBackground>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 10),
-      vsync: this,
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  const _MobileMenuItem({
+    required this.icon,
+    required this.text,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                const Color(0xFF0A0E27),
-                Color.lerp(
-                  const Color(0xFF1A1E3E),
-                  const Color(0xFF2A1E4E),
-                  _controller.value,
-                )!,
-                const Color(0xFF0A0E27),
-              ],
-            ),
+    final themeController = Get.find<ThemeController>();
+
+    return Obx(
+      () => ListTile(
+        leading: FaIcon(icon, color: themeController.accentColor),
+        title: Text(
+          text,
+          style: GoogleFonts.inter(
+            color: themeController.textPrimary,
+            fontWeight: FontWeight.w500,
           ),
-        );
-      },
-    );
-  }
-}
-
-// Home Content
-class HomeContent extends StatelessWidget {
-  const HomeContent({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: const [
-          HeroSection(),
-          SizedBox(height: 80),
-          QuickAboutSection(),
-          SizedBox(height: 80),
-          FeaturedProjectsSection(),
-          SizedBox(height: 80),
-          Footer(),
-        ],
+        ),
+        onTap: onTap,
       ),
     );
   }
@@ -457,27 +328,28 @@ class HeroSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final isMobile = size.width < 800;
+    final isDesktop = size.width > 900;
+    final isTablet = size.width > 600 && size.width <= 900;
 
     return Container(
       constraints: const BoxConstraints(maxWidth: 1400),
       padding: EdgeInsets.symmetric(
-        horizontal: isMobile ? 20 : 80,
-        vertical: isMobile ? 40 : 100,
+        horizontal: isDesktop ? 80 : (isTablet ? 40 : 24),
+        vertical: isDesktop ? 100 : (isTablet ? 60 : 40),
       ),
-      child: isMobile
-          ? Column(
+      child: isDesktop
+          ? Row(
+              children: [
+                Expanded(child: _HeroContent()),
+                const SizedBox(width: 60),
+                const _HeroImage(),
+              ],
+            )
+          : Column(
               children: [
                 const _HeroImage(),
                 const SizedBox(height: 40),
                 _HeroContent(),
-              ],
-            )
-          : Row(
-              children: [
-                Expanded(child: _HeroContent()),
-                const SizedBox(width: 80),
-                const _HeroImage(),
               ],
             ),
     );
@@ -487,38 +359,29 @@ class HeroSection extends StatelessWidget {
 class _HeroContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 800;
+    final themeController = Get.find<ThemeController>();
+    final isMobile = MediaQuery.of(context).size.width < 600;
 
-    return Column(
-      crossAxisAlignment:
-          isMobile ? CrossAxisAlignment.center : CrossAxisAlignment.start,
-      children: [
-        TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0.0, end: 1.0),
-          duration: const Duration(milliseconds: 1000),
-          builder: (context, value, child) {
-            return Opacity(
-              opacity: value,
-              child: Transform.translate(
-                offset: Offset(0, 30 * (1 - value)),
-                child: child,
-              ),
-            );
-          },
-          child: Container(
+    return Obx(
+      () => Column(
+        crossAxisAlignment: isMobile
+            ? CrossAxisAlignment.center
+            : CrossAxisAlignment.start,
+        children: [
+          Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: const Color(0xFF00F5FF).withOpacity(0.1),
-              border: Border.all(color: const Color(0xFF00F5FF)),
+              color: themeController.accentColor.withOpacity(0.1),
+              border: Border.all(color: themeController.accentColor),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const FaIcon(
+                FaIcon(
                   FontAwesomeIcons.mobileScreen,
                   size: 12,
-                  color: Color(0xFF00F5FF),
+                  color: themeController.accentColor,
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -526,101 +389,56 @@ class _HeroContent extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF00F5FF),
+                    color: themeController.accentColor,
                     letterSpacing: 2,
                   ),
                 ),
               ],
             ),
           ),
-        ),
-        const SizedBox(height: 24),
-        TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0.0, end: 1.0),
-          duration: const Duration(milliseconds: 1200),
-          builder: (context, value, child) {
-            return Opacity(
-              opacity: value,
-              child: Transform.translate(
-                offset: Offset(0, 30 * (1 - value)),
-                child: child,
-              ),
-            );
-          },
-          child: Text(
+          const SizedBox(height: 24),
+          Text(
             'Muhammad\nFaraz',
             style: GoogleFonts.poppins(
-              fontSize: isMobile ? 48 : 64,
+              fontSize: isMobile ? 40 : 64,
               fontWeight: FontWeight.w700,
-              color: Colors.white,
+              color: themeController.textPrimary,
               height: 1.1,
-              letterSpacing: -2,
             ),
             textAlign: isMobile ? TextAlign.center : TextAlign.left,
           ),
-        ),
-        const SizedBox(height: 24),
-        TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0.0, end: 1.0),
-          duration: const Duration(milliseconds: 1400),
-          builder: (context, value, child) {
-            return Opacity(
-              opacity: value,
-              child: Transform.translate(
-                offset: Offset(0, 30 * (1 - value)),
-                child: child,
-              ),
-            );
-          },
-          child: Text(
+          const SizedBox(height: 24),
+          Text(
             'Crafting beautiful, dynamic mobile experiences\nwith Flutter & Firebase. Currently building\ninnovative solutions at Covero.',
             style: GoogleFonts.inter(
-              fontSize: isMobile ? 16 : 18,
-              color: const Color(0xFFB8B8D1),
+              fontSize: isMobile ? 14 : 18,
+              color: themeController.textSecondary,
               height: 1.6,
             ),
             textAlign: isMobile ? TextAlign.center : TextAlign.left,
           ),
-        ),
-        const SizedBox(height: 40),
-        TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0.0, end: 1.0),
-          duration: const Duration(milliseconds: 1600),
-          builder: (context, value, child) {
-            return Opacity(
-              opacity: value,
-              child: Transform.translate(
-                offset: Offset(0, 30 * (1 - value)),
-                child: child,
-              ),
-            );
-          },
-          child: Wrap(
+          const SizedBox(height: 32),
+          Wrap(
             spacing: 16,
             runSpacing: 16,
-            alignment:
-                isMobile ? WrapAlignment.center : WrapAlignment.start,
+            alignment: isMobile ? WrapAlignment.center : WrapAlignment.start,
             children: [
               _PrimaryButton(
                 text: 'View Projects',
                 icon: FontAwesomeIcons.briefcase,
-                onPressed: () {
-                  Navigator.pushNamed(context, '/projects');
-                },
+                onPressed: () => Get.toNamed('/projects'),
               ),
               _SecondaryButton(
                 text: 'Contact Me',
                 icon: FontAwesomeIcons.envelope,
-                onPressed: () {
-                  Navigator.pushNamed(context, '/contact');
-                },
+                onPressed: () => Get.toNamed('/contact'),
               ),
             ],
           ),
-        ),
-        const SizedBox(height: 40),
-        const _SocialLinks(),
-      ],
+          const SizedBox(height: 32),
+          const _SocialLinks(),
+        ],
+      ),
     );
   }
 }
@@ -630,60 +448,42 @@ class _HeroImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 800;
+    final isMobile = MediaQuery.of(context).size.width < 600;
+    final themeController = Get.find<ThemeController>();
 
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.0, end: 1.0),
-      duration: const Duration(milliseconds: 1800),
-      builder: (context, value, child) {
-        return Opacity(
-          opacity: value,
-          child: Transform.scale(
-            scale: 0.8 + (0.2 * value),
-            child: child,
-          ),
-        );
-      },
-      child: Container(
-        width: isMobile ? 280 : 380,
-        height: isMobile ? 280 : 380,
+    return Obx(
+      () => Container(
+        width: isMobile ? 250 : 350,
+        height: isMobile ? 250 : 350,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF00F5FF),
-              Color(0xFF7B61FF),
-            ],
+            colors: [Color(0xFF00F5FF), Color(0xFF7B61FF)],
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF00F5FF).withOpacity(0.3),
-              blurRadius: 60,
-              spreadRadius: 10,
+              color: themeController.accentColor.withOpacity(0.3),
+              blurRadius: 40,
+              spreadRadius: 5,
             ),
           ],
         ),
-        child: ClipOval(
-          child: Container(
-            margin: const EdgeInsets.all(4),
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Color(0xFF1A1E3E),
+        child: Container(
+          margin: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: themeController.cardColor,
+          ),
+          child: ClipOval(
+            child: Center(
+              child: FaIcon(
+                FontAwesomeIcons.userTie,
+                size: isMobile ? 100 : 140,
+                color: themeController.accentColor,
+              ),
             ),
-            // Replace with actual image when available:
-            child: Image.asset(
-              'assets/images/cv.png',
-              fit: BoxFit.cover,
-            ),
-            // child: const Center(
-            //   child: FaIcon(
-            //     FontAwesomeIcons.userTie,
-            //     size: 120,
-            //     color: Color(0xFF00F5FF),
-            //   ),
-            // ),
           ),
         ),
       ),
@@ -696,8 +496,10 @@ class _SocialLinks extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
+
     return Row(
-      mainAxisAlignment: MediaQuery.of(context).size.width < 800
+      mainAxisAlignment: isMobile
           ? MainAxisAlignment.center
           : MainAxisAlignment.start,
       children: const [
@@ -705,21 +507,18 @@ class _SocialLinks extends StatelessWidget {
           icon: FontAwesomeIcons.github,
           url: 'https://github.com/jamfaraz',
         ),
-        SizedBox(width: 16),
+        SizedBox(width: 12),
         _SocialIcon(
           icon: FontAwesomeIcons.linkedin,
           url: 'https://linkedin.com/in/muhammad-faraz1035bb297',
         ),
-        SizedBox(width: 16),
+        SizedBox(width: 12),
         _SocialIcon(
           icon: FontAwesomeIcons.envelope,
           url: 'mailto:farazj105@gmail.com',
         ),
-        SizedBox(width: 16),
-        _SocialIcon(
-          icon: FontAwesomeIcons.phone,
-          url: 'tel:+923070217843',
-        ),
+        SizedBox(width: 12),
+        _SocialIcon(icon: FontAwesomeIcons.phone, url: 'tel:+923070217843'),
       ],
     );
   }
@@ -740,29 +539,35 @@ class _SocialIconState extends State<_SocialIcon> {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: () => _launchURL(widget.url),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: _isHovered
-                ? const Color(0xFF00F5FF).withOpacity(0.1)
-                : Colors.transparent,
-            border: Border.all(
+    final themeController = Get.find<ThemeController>();
+
+    return Obx(
+      () => MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: GestureDetector(
+          onTap: () => _launchURL(widget.url),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
               color: _isHovered
-                  ? const Color(0xFF00F5FF)
-                  : const Color(0xFF3A3E5E),
+                  ? themeController.accentColor.withOpacity(0.1)
+                  : Colors.transparent,
+              border: Border.all(
+                color: _isHovered
+                    ? themeController.accentColor
+                    : themeController.borderColor,
+              ),
+              borderRadius: BorderRadius.circular(8),
             ),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: FaIcon(
-            widget.icon,
-            color: _isHovered ? const Color(0xFF00F5FF) : Colors.white,
-            size: 18,
+            child: FaIcon(
+              widget.icon,
+              color: _isHovered
+                  ? themeController.accentColor
+                  : themeController.textPrimary,
+              size: 16,
+            ),
           ),
         ),
       ),
@@ -777,67 +582,82 @@ class _SocialIconState extends State<_SocialIcon> {
   }
 }
 
-// Quick About Section
-class QuickAboutSection extends StatelessWidget {
-  const QuickAboutSection({super.key});
+// Why Choose Me Section
+class WhyChooseMeSection extends StatelessWidget {
+  const WhyChooseMeSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 800;
+    final themeController = Get.find<ThemeController>();
+    final size = MediaQuery.of(context).size;
+    final isDesktop = size.width > 900;
+    final isTablet = size.width > 600 && size.width <= 900;
+    final isMobile = size.width <= 600;
 
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 1400),
-      padding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 80),
-      child: Column(
-        children: [
-          Text(
-            'Why Choose Me',
-            style: GoogleFonts.poppins(
-              fontSize: isMobile ? 32 : 48,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
+    return Obx(
+      () => Container(
+        constraints: const BoxConstraints(maxWidth: 1400),
+        padding: EdgeInsets.symmetric(
+          horizontal: isDesktop ? 80 : (isTablet ? 40 : 24),
+        ),
+        child: Column(
+          children: [
+            Text(
+              'Why Choose Me',
+              style: GoogleFonts.poppins(
+                fontSize: isMobile ? 32 : 48,
+                fontWeight: FontWeight.w700,
+                color: themeController.textPrimary,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Delivering excellence in mobile development',
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              color: const Color(0xFFB8B8D1),
+            const SizedBox(height: 16),
+            Text(
+              'Delivering excellence in mobile development',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                color: themeController.textSecondary,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 60),
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: isMobile ? 1 : 3,
-            mainAxisSpacing: 24,
-            crossAxisSpacing: 24,
-            childAspectRatio: isMobile ? 1.5 : 1.1,
-            children: const [
-              _FeatureCard(
-                icon: FontAwesomeIcons.rocket,
-                title: '8+ Published Apps',
-                description:
-                    'Successfully deployed apps on both Play Store and App Store',
-              ),
-              _FeatureCard(
-                icon: FontAwesomeIcons.code,
-                title: 'Clean Code',
-                description:
-                    'Writing maintainable, scalable code following best practices',
-              ),
-              _FeatureCard(
-                icon: FontAwesomeIcons.bolt,
-                title: 'Fast Delivery',
-                description:
-                    'Delivering high-quality projects within deadlines',
-              ),
-            ],
-          ),
-        ],
+            const SizedBox(height: 60),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                int crossAxisCount = isDesktop ? 3 : (isTablet ? 2 : 1);
+                double spacing = isDesktop ? 32 : 24;
+
+                return GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: crossAxisCount,
+                  mainAxisSpacing: spacing,
+                  crossAxisSpacing: spacing,
+                  childAspectRatio: isMobile ? 1.2 : 1.0,
+                  children: const [
+                    _FeatureCard(
+                      icon: FontAwesomeIcons.rocket,
+                      title: '8+ Published Apps',
+                      description:
+                          'Successfully deployed apps on both Play Store and App Store',
+                    ),
+                    _FeatureCard(
+                      icon: FontAwesomeIcons.code,
+                      title: 'Clean Code',
+                      description:
+                          'Writing maintainable, scalable code following best practices',
+                    ),
+                    _FeatureCard(
+                      icon: FontAwesomeIcons.bolt,
+                      title: 'Fast Delivery',
+                      description:
+                          'Delivering high-quality projects within deadlines',
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -863,61 +683,62 @@ class _FeatureCardState extends State<_FeatureCard> {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.all(32),
-        decoration: BoxDecoration(
-          color: _isHovered
-              ? const Color(0xFF1A1E3E)
-              : const Color(0xFF0F1229),
-          border: Border.all(
+    final themeController = Get.find<ThemeController>();
+
+    return Obx(
+      () => MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
             color: _isHovered
-                ? const Color(0xFF00F5FF)
-                : const Color(0xFF2A2E4E),
+                ? themeController.hoverColor
+                : themeController.cardColor,
+            border: Border.all(
+              color: _isHovered
+                  ? themeController.accentColor
+                  : themeController.borderColor,
+              width: _isHovered ? 2 : 1,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: _isHovered
+                ? [
+                    BoxShadow(
+                      color: themeController.accentColor.withOpacity(0.2),
+                      blurRadius: 20,
+                      spreadRadius: 2,
+                    ),
+                  ]
+                : [],
           ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: _isHovered
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFF00F5FF).withOpacity(0.2),
-                    blurRadius: 20,
-                    spreadRadius: 2,
-                  ),
-                ]
-              : [],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FaIcon(
-              widget.icon,
-              size: 48,
-              color: const Color(0xFF00F5FF),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              widget.title,
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              FaIcon(widget.icon, size: 48, color: themeController.accentColor),
+              const SizedBox(height: 20),
+              Text(
+                widget.title,
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: themeController.textPrimary,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              widget.description,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: const Color(0xFFB8B8D1),
-                height: 1.6,
+              const SizedBox(height: 12),
+              Text(
+                widget.description,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: themeController.textSecondary,
+                  height: 1.6,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -930,116 +751,215 @@ class FeaturedProjectsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 800;
+    final themeController = Get.find<ThemeController>();
+    final size = MediaQuery.of(context).size;
+    final isDesktop = size.width > 900;
+    final isTablet = size.width > 600 && size.width <= 900;
+    final isMobile = size.width <= 600;
 
-    return Container(
-      constraints: const BoxConstraints(maxWidth: 1400),
-      padding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 80),
-      child: Column(
-        children: [
-          Text(
-            'Featured Projects',
-            style: GoogleFonts.poppins(
-              fontSize: isMobile ? 32 : 48,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
+    return Obx(
+      () => Container(
+        constraints: const BoxConstraints(maxWidth: 1400),
+        padding: EdgeInsets.symmetric(
+          horizontal: isDesktop ? 80 : (isTablet ? 40 : 24),
+        ),
+        child: Column(
+          children: [
+            Text(
+              'Featured Projects',
+              style: GoogleFonts.poppins(
+                fontSize: isMobile ? 32 : 48,
+                fontWeight: FontWeight.w700,
+                color: themeController.textPrimary,
+              ),
+              textAlign: TextAlign.center,
             ),
-          ),
-          const SizedBox(height: 60),
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: isMobile ? 1 : 2,
-            mainAxisSpacing: 24,
-            crossAxisSpacing: 24,
-            childAspectRatio: isMobile ? 1.0 : 1.2,
-            children: const [
-              _MiniProjectCard(
-                title: 'Covero Pro',
-                description: 'Professional service management',
-                icon: FontAwesomeIcons.briefcase,
-                color: Color(0xFF00F5FF),
-              ),
-              _MiniProjectCard(
-                title: 'MyCovero',
-                description: 'Client portal application',
-                icon: FontAwesomeIcons.mobileScreen,
-                color: Color(0xFF7B61FF),
-              ),
-            ],
-          ),
-          const SizedBox(height: 40),
-          _PrimaryButton(
-            text: 'View All Projects',
-            icon: FontAwesomeIcons.arrowRight,
-            onPressed: () {
-              Navigator.pushNamed(context, '/projects');
-            },
-          ),
-        ],
+            const SizedBox(height: 60),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                int crossAxisCount = isDesktop ? 2 : 1;
+                double spacing = isDesktop ? 32 : 24;
+                double aspectRatio = isMobile ? 0.85 : 1.1;
+
+                return GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: crossAxisCount,
+                  mainAxisSpacing: spacing,
+                  crossAxisSpacing: spacing,
+                  childAspectRatio: aspectRatio,
+                  children: const [
+                    _ProjectCard(
+                      title: 'Covero Pro',
+                      description:
+                          'Professional service management application for Covero agents. Manage clients, appointments, and services efficiently.',
+                      tags: ['Flutter', 'Firebase', 'GetX', 'REST API'],
+                      icon: FontAwesomeIcons.briefcase,
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF00F5FF), Color(0xFF0099CC)],
+                      ),
+                    ),
+                    _ProjectCard(
+                      title: 'MyCovero',
+                      description:
+                          'Client portal for Covero services. Book appointments, track orders, and manage your account seamlessly.',
+                      tags: [
+                        'Flutter',
+                        'Firebase',
+                        'Provider',
+                        'Push Notifications',
+                      ],
+                      icon: FontAwesomeIcons.userGear,
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF7B61FF), Color(0xFF5B41CC)],
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 40),
+            _PrimaryButton(
+              text: 'View All Projects',
+              icon: FontAwesomeIcons.arrowRight,
+              onPressed: () => Get.toNamed('/projects'),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _MiniProjectCard extends StatelessWidget {
+class _ProjectCard extends StatefulWidget {
   final String title;
   final String description;
+  final List<String> tags;
   final IconData icon;
-  final Color color;
+  final Gradient gradient;
 
-  const _MiniProjectCard({
+  const _ProjectCard({
     required this.title,
     required this.description,
+    required this.tags,
     required this.icon,
-    required this.color,
+    required this.gradient,
   });
 
   @override
+  State<_ProjectCard> createState() => _ProjectCardState();
+}
+
+class _ProjectCardState extends State<_ProjectCard> {
+  bool _isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F1229),
-        border: Border.all(color: const Color(0xFF2A2E4E)),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              border: Border.all(color: color),
-              shape: BoxShape.circle,
+    final themeController = Get.find<ThemeController>();
+
+    return Obx(
+      () => MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          decoration: BoxDecoration(
+            color: themeController.cardColor,
+            border: Border.all(
+              color: _isHovered
+                  ? themeController.accentColor
+                  : themeController.borderColor,
+              width: _isHovered ? 2 : 1,
             ),
-            child: FaIcon(
-              icon,
-              size: 40,
-              color: color,
-            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: _isHovered
+                ? [
+                    BoxShadow(
+                      color: themeController.accentColor.withOpacity(0.2),
+                      blurRadius: 20,
+                    ),
+                  ]
+                : [],
           ),
-          const SizedBox(height: 24),
-          Text(
-            title,
-            style: GoogleFonts.poppins(
-              fontSize: 24,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-            textAlign: TextAlign.center,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: 140,
+                decoration: BoxDecoration(
+                  gradient: widget.gradient,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
+                ),
+                child: Center(
+                  child: FaIcon(widget.icon, size: 56, color: Colors.white),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.title,
+                        style: GoogleFonts.poppins(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w600,
+                          color: themeController.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        widget.description,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: themeController.textSecondary,
+                          height: 1.5,
+                        ),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const Spacer(),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: widget.tags
+                            .map(
+                              (tag) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: themeController.accentColor
+                                      .withOpacity(0.1),
+                                  border: Border.all(
+                                    color: themeController.accentColor
+                                        .withOpacity(0.3),
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  tag,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    color: themeController.accentColor,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-          Text(
-            description,
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              color: const Color(0xFFB8B8D1),
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -1051,43 +971,45 @@ class Footer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
-      decoration: const BoxDecoration(
-        border: Border(
-          top: BorderSide(color: Color(0xFF2A2E4E)),
+    final themeController = Get.find<ThemeController>();
+
+    return Obx(
+      () => Container(
+        padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+        decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: themeController.borderColor)),
         ),
-      ),
-      child: Column(
-        children: [
-          Text(
-            '© 2026 Muhammad Faraz. All rights reserved.',
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              color: const Color(0xFF8A8AA8),
+        child: Column(
+          children: [
+            Text(
+              '© 2026 Muhammad Faraz. All rights reserved.',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: themeController.textSecondary,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Built with Flutter',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  color: const Color(0xFF8A8AA8),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Built with Flutter',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    color: themeController.textSecondary,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              const FaIcon(
-                FontAwesomeIcons.heart,
-                size: 12,
-                color: Color(0xFFFF6B6B),
-              ),
-            ],
-          ),
-        ],
+                const SizedBox(width: 8),
+                const FaIcon(
+                  FontAwesomeIcons.heart,
+                  size: 12,
+                  color: Color(0xFFFF6B6B),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1121,7 +1043,7 @@ class _PrimaryButtonState extends State<_PrimaryButton> {
         onTap: widget.onPressed,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: _isHovered
@@ -1151,11 +1073,7 @@ class _PrimaryButtonState extends State<_PrimaryButton> {
                 ),
               ),
               const SizedBox(width: 8),
-              FaIcon(
-                widget.icon,
-                size: 14,
-                color: Colors.black,
-              ),
+              FaIcon(widget.icon, size: 14, color: Colors.black),
             ],
           ),
         ),
@@ -1184,44 +1102,51 @@ class _SecondaryButtonState extends State<_SecondaryButton> {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: widget.onPressed,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-          decoration: BoxDecoration(
-            color: _isHovered
-                ? const Color(0xFF00F5FF).withOpacity(0.1)
-                : Colors.transparent,
-            border: Border.all(
+    final themeController = Get.find<ThemeController>();
+
+    return Obx(
+      () => MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: GestureDetector(
+          onTap: widget.onPressed,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            decoration: BoxDecoration(
               color: _isHovered
-                  ? const Color(0xFF00F5FF)
-                  : const Color(0xFF3A3E5E),
+                  ? themeController.accentColor.withOpacity(0.1)
+                  : Colors.transparent,
+              border: Border.all(
+                color: _isHovered
+                    ? themeController.accentColor
+                    : themeController.borderColor,
+              ),
+              borderRadius: BorderRadius.circular(8),
             ),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                widget.text,
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color:
-                      _isHovered ? const Color(0xFF00F5FF) : Colors.white,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  widget.text,
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: _isHovered
+                        ? themeController.accentColor
+                        : themeController.textPrimary,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              FaIcon(
-                widget.icon,
-                size: 14,
-                color: _isHovered ? const Color(0xFF00F5FF) : Colors.white,
-              ),
-            ],
+                const SizedBox(width: 8),
+                FaIcon(
+                  widget.icon,
+                  size: 14,
+                  color: _isHovered
+                      ? themeController.accentColor
+                      : themeController.textPrimary,
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -28,6 +28,19 @@ class ThemeController extends GetxController {
   );
   
   Color get backgroundColor => _isDarkMode.value ? const Color(0xFF0A0E27) : const Color(0xFFF5F7FA);
+// background gradient
+  LinearGradient get backgroundGradient=> _isDarkMode.value
+      ? const LinearGradient(
+          colors: [Color(0xFF0A0E27), Color(0xFF1A1E3E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        )
+      : const LinearGradient(
+          colors: [Color(0xFFF5F7FA), Color(0xFFE0E0E0)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+
   Color get cardColor => _isDarkMode.value ? const Color(0xFF0F1229) : Colors.white;
   Color get textPrimary => _isDarkMode.value ? Colors.white : const Color(0xFF1A1A1A);
   Color get textSecondary => _isDarkMode.value ? const Color(0xFFB8B8D1) : const Color(0xFF6B6B6B);

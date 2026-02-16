@@ -1,111 +1,118 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../controllers/theme_controller.dart';
 
 class SkillsScreen extends StatelessWidget {
   const SkillsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 800;
+    final themeController = Get.find<ThemeController>();
+    final size = MediaQuery.of(context).size;
+    final isDesktop = size.width > 900;
+    final isTablet = size.width > 600 && size.width <= 900;
 
-    return SingleChildScrollView(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 1400),
-        padding: EdgeInsets.all(isMobile ? 20 : 80),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-
-            const SizedBox(height: 20),
-            Text(
-              'Skills & Technologies',
-              style: GoogleFonts.poppins(
-                fontSize: isMobile ? 36 : 56,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Technologies I work with',
-              style: GoogleFonts.inter(
-                fontSize: 18,
-                color: const Color(0xFFB8B8D1),
-              ),
-            ),
-            const SizedBox(height: 60),
-            // Core Technologies
-            _SkillCategory(
-              title: 'Core Technologies',
-              icon: FontAwesomeIcons.code,
-              skills: const [
-                _SkillData('Flutter', 95, FontAwesomeIcons.mobile),
-                _SkillData('Dart', 95, FontAwesomeIcons.code),
-                _SkillData('Firebase', 90, FontAwesomeIcons.fire),
-              ],
-            ),
-            const SizedBox(height: 40),
-            // State Management
-            _SkillCategory(
-              title: 'State Management',
-              icon: FontAwesomeIcons.diagramProject,
-              skills: const [
-                _SkillData('Provider', 85, FontAwesomeIcons.boxesStacked),
-                _SkillData('GetX', 85, FontAwesomeIcons.gears),
-                _SkillData('BLoC', 75, FontAwesomeIcons.cubes),
-              ],
-            ),
-            const SizedBox(height: 40),
-            // Backend & APIs
-            _SkillCategory(
-              title: 'Backend & APIs',
-              icon: FontAwesomeIcons.server,
-              skills: const [
-                _SkillData('REST APIs', 90, FontAwesomeIcons.cloudArrowUp),
-                _SkillData('GraphQL', 75, FontAwesomeIcons.sitemap),
-                _SkillData('Node.js', 70, FontAwesomeIcons.nodeJs),
-              ],
-            ),
-            const SizedBox(height: 40),
-            // Development Tools
-            _SkillCategory(
-              title: 'Development Tools',
-              icon: FontAwesomeIcons.toolbox,
-              skills: const [
-                _SkillData('VS Code', 95, FontAwesomeIcons.code),
-                _SkillData(
-                    'Android Studio', 90, FontAwesomeIcons.android),
-                _SkillData('Git & GitHub', 85, FontAwesomeIcons.github),
-                _SkillData('Postman', 80, FontAwesomeIcons.envelopeOpenText),
-              ],
-            ),
-            const SizedBox(height: 40),
-            // Design & UI
-            _SkillCategory(
-              title: 'Design & UI',
-              icon: FontAwesomeIcons.paintbrush,
-              skills: const [
-                _SkillData('Material Design', 90, FontAwesomeIcons.palette),
-                _SkillData('Responsive Design', 90, FontAwesomeIcons.mobile),
-                _SkillData('Figma', 75, FontAwesomeIcons.figma),
-              ],
-            ),
-            const SizedBox(height: 40),
-            // Other Skills
-            _SkillCategory(
-              title: 'Other Skills',
-              icon: FontAwesomeIcons.star,
-              skills: const [
-                _SkillData('Debugging', 90, FontAwesomeIcons.bug),
-                _SkillData('Performance Optimization', 85,
-                    FontAwesomeIcons.gaugeHigh),
-                _SkillData('Testing', 80, FontAwesomeIcons.clipboardCheck),
-              ],
-            ),
-          ],
+    return Scaffold(
+      body: Obx(() => Container(
+        decoration: BoxDecoration(
+          gradient: themeController.backgroundGradient,
         ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildAppBar(context, themeController),
+                Container(
+                  constraints: const BoxConstraints(maxWidth: 1400),
+                  padding: EdgeInsets.all(
+                    isDesktop ? 80 : (isTablet ? 40 : 24),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Skills & Technologies',
+                        style: GoogleFonts.poppins(
+                          fontSize: isDesktop ? 56 : 40,
+                          fontWeight: FontWeight.w700,
+                          color: themeController.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Technologies I work with',
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          color: themeController.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 60),
+                      _buildSkillsGrid(isDesktop, isTablet),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      )),
+    );
+  }
+
+  Widget _buildAppBar(BuildContext context, ThemeController themeController) {
+    return Obx(() => Container(
+      padding: const EdgeInsets.all(24),
+      child: Row(
+        children: [
+          IconButton(
+            icon: FaIcon(
+              FontAwesomeIcons.arrowLeft,
+              color: themeController.textPrimary,
+            ),
+            onPressed: () => Get.back(),
+          ),
+          const Spacer(),
+          IconButton(
+            icon: FaIcon(
+              themeController.isDarkMode
+                  ? FontAwesomeIcons.sun
+                  : FontAwesomeIcons.moon,
+              color: themeController.accentColor,
+            ),
+            onPressed: () => themeController.toggleTheme(),
+          ),
+        ],
       ),
+    ));
+  }
+
+  Widget _buildSkillsGrid(bool isDesktop, bool isTablet) {
+    final skills = [
+      _SkillData('Flutter', 95, FontAwesomeIcons.mobile),
+      _SkillData('Dart', 95, FontAwesomeIcons.code),
+      _SkillData('Firebase', 90, FontAwesomeIcons.fire),
+      _SkillData('Provider', 85, FontAwesomeIcons.boxesStacked),
+      _SkillData('GetX', 85, FontAwesomeIcons.gears),
+      _SkillData('REST APIs', 90, FontAwesomeIcons.cloudArrowUp),
+      _SkillData('VS Code', 95, FontAwesomeIcons.code),
+      _SkillData('Android Studio', 90, FontAwesomeIcons.android),
+      _SkillData('Git & GitHub', 85, FontAwesomeIcons.github),
+      _SkillData('UI/UX Design', 80, FontAwesomeIcons.paintbrush),
+    ];
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: isDesktop ? 2 : 1,
+        childAspectRatio: isDesktop ? 4 : 3,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+      ),
+      itemCount: skills.length,
+      itemBuilder: (context, index) => _SkillCard(skill: skills[index]),
     );
   }
 }
@@ -116,62 +123,6 @@ class _SkillData {
   final IconData icon;
 
   const _SkillData(this.name, this.level, this.icon);
-}
-
-class _SkillCategory extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final List<_SkillData> skills;
-
-  const _SkillCategory({
-    required this.title,
-    required this.icon,
-    required this.skills,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isMobile = MediaQuery.of(context).size.width < 800;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            FaIcon(
-              icon,
-              color: const Color(0xFF00F5FF),
-              size: 24,
-            ),
-            const SizedBox(width: 12),
-            Text(
-              title,
-              style: GoogleFonts.poppins(
-                fontSize: 28,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 24),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: isMobile ? 1 : 2,
-            childAspectRatio: isMobile ? 3 : 4,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-          ),
-          itemCount: skills.length,
-          itemBuilder: (context, index) {
-            return _SkillCard(skill: skills[index]);
-          },
-        ),
-      ],
-    );
-  }
 }
 
 class _SkillCard extends StatefulWidget {
@@ -209,7 +160,9 @@ class _SkillCardState extends State<_SkillCard>
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
+    final themeController = Get.find<ThemeController>();
+    
+    return Obx(() => MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: AnimatedContainer(
@@ -217,12 +170,12 @@ class _SkillCardState extends State<_SkillCard>
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: _isHovered
-              ? const Color(0xFF1A1E3E)
-              : const Color(0xFF0F1229),
+              ? themeController.hoverColor
+              : themeController.cardColor,
           border: Border.all(
             color: _isHovered
-                ? const Color(0xFF00F5FF)
-                : const Color(0xFF2A2E4E),
+                ? themeController.accentColor
+                : themeController.borderColor,
           ),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -234,7 +187,7 @@ class _SkillCardState extends State<_SkillCard>
               children: [
                 FaIcon(
                   widget.skill.icon,
-                  color: const Color(0xFF00F5FF),
+                  color: themeController.accentColor,
                   size: 20,
                 ),
                 const SizedBox(width: 12),
@@ -244,7 +197,7 @@ class _SkillCardState extends State<_SkillCard>
                     style: GoogleFonts.inter(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: themeController.textPrimary,
                     ),
                   ),
                 ),
@@ -253,7 +206,7 @@ class _SkillCardState extends State<_SkillCard>
                   style: GoogleFonts.inter(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF00F5FF),
+                    color: themeController.accentColor,
                   ),
                 ),
               ],
@@ -267,7 +220,7 @@ class _SkillCardState extends State<_SkillCard>
                     Container(
                       height: 8,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2A2E4E),
+                        color: themeController.borderColor,
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -290,6 +243,6 @@ class _SkillCardState extends State<_SkillCard>
           ],
         ),
       ),
-    );
+    ));
   }
 }
