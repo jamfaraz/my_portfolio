@@ -42,6 +42,17 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.14.4 # Use the latest version
+
+flutter_launcher_icons:
+  image_path: "assets/images/icon.png" # Global default
+  android: true
+  ios: true
+  web:
+    generate: true
+    image_path: "assets/images/icon.png" # Can be a different image for web if you want
+    background_color: "#ffffff"
+    theme_color: "#0175C2"
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

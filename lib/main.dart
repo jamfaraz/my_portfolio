@@ -9,6 +9,7 @@ import 'screens/about_screen.dart';
 import 'screens/projects_screen.dart';
 import 'screens/contact_screen.dart';
 import 'screens/skils_screen.dart';
+import 'screens/theme_setting_scren.dart';
 
 void main() {
   Get.put(ThemeController());
@@ -25,8 +26,9 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'Muhammad Faraz - Flutter Developer',
       debugShowCheckedModeBanner: false,
-      theme: ThemeController.lightTheme,
-      darkTheme: ThemeController.darkTheme,
+      theme: themeController.lightTheme,
+      darkTheme: themeController.darkTheme,
+      
 
       themeMode: ThemeMode.dark,
       home: const HomeScreen(),
@@ -36,6 +38,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/skills', page: () => const SkillsScreen()),
         GetPage(name: '/projects', page: () => const ProjectsScreen()),
         GetPage(name: '/contact', page: () => const ContactScreen()),
+        GetPage(name: '/theme-settings', page: () => const ThemeSettingsScreen()),
       ],
     );
   }
@@ -139,6 +142,16 @@ class CustomAppBar extends StatelessWidget {
                   const SizedBox(width: 40),
                   IconButton(
                     icon: FaIcon(
+                      FontAwesomeIcons.palette,
+                      color: themeController.accentColor,
+                      size: 20,
+                    ),
+                    onPressed: () => Get.toNamed('/theme-settings'),
+                    tooltip: 'Theme Settings',
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: FaIcon(
                       themeController.isDarkMode
                           ? FontAwesomeIcons.sun
                           : FontAwesomeIcons.moon,
@@ -152,6 +165,14 @@ class CustomAppBar extends StatelessWidget {
             else
               Row(
                 children: [
+                  IconButton(
+                    icon: FaIcon(
+                      FontAwesomeIcons.palette,
+                      color: themeController.accentColor,
+                      size: 20,
+                    ),
+                    onPressed: () => Get.toNamed('/theme-settings'),
+                  ),
                   IconButton(
                     icon: FaIcon(
                       themeController.isDarkMode
@@ -227,6 +248,14 @@ class CustomAppBar extends StatelessWidget {
                 onTap: () {
                   Navigator.pop(context);
                   Get.toNamed('/contact');
+                },
+              ),
+              _MobileMenuItem(
+                icon: FontAwesomeIcons.palette,
+                text: 'Theme Settings',
+                onTap: () {
+                  Navigator.pop(context);
+                  Get.toNamed('/theme-settings');
                 },
               ),
               const SizedBox(height: 20),
@@ -477,13 +506,7 @@ class _HeroImage extends StatelessWidget {
             color: themeController.cardColor,
           ),
           child: ClipOval(
-            child: Center(
-              child: FaIcon(
-                FontAwesomeIcons.userTie,
-                size: isMobile ? 100 : 140,
-                color: themeController.accentColor,
-              ),
-            ),
+            child: Image.asset('assets/images/cv.png', fit: BoxFit.cover),
           ),
         ),
       ),
